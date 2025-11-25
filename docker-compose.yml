@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: ./pagamento-app
+      dockerfile: Dockerfile
+    container_name: pagamento-app
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  db:
+    image: mysql:latest
+    container_name: pagamento-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pagamento
+      MYSQL_USER: pagamento
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata:
