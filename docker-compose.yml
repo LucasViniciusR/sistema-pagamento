@@ -11,6 +11,7 @@ services:
       - "8000:8000"
     depends_on:
       - db
+      - mongo
 
   db:
     image: mysql:latest
@@ -25,6 +26,19 @@ services:
       - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
+  
+  mongo:
+    image: mongo:7
+    container_name: pagamento-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - mongodata:/data/db
 
 volumes:
   dbdata:
+  mongodata:
