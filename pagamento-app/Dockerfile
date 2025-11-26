@@ -9,10 +9,15 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libssl-dev \
+    libsasl2-dev \
+    librdkafka-dev \
+    build-essential \
     && docker-php-ext-install pdo pdo_mysql mbstring gd
 
 RUN pecl install mongodb \
     && echo "extension=mongodb.so" > /usr/local/etc/php/conf.d/mongodb.ini
+RUN pecl install rdkafka \
+    && docker-php-ext-enable rdkafka
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

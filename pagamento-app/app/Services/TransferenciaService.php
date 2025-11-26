@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\NotificadorDeTransferencia;
 use App\Repositories\CarteiraRepository;
 use App\Repositories\TransferenciaRepository;
 use App\Repositories\UsuarioRepository;
@@ -12,11 +13,11 @@ use Illuminate\Support\Facades\Log;
 class TransferenciaService
 {
     public function __construct(
-        private UsuarioRepository $usuarioRepo,
-        private CarteiraRepository $carteiraRepo,
+        private UsuarioRepository $usuarioRepository,
+        private CarteiraRepository $carteiraRepository,
         private TransferenciaRepository $transferenciaRepository,
         private ServicoAutorizacaoExterno $autorizador,
-        private ServicoDeNotificacao $notificador
+        private NotificadorDeTransferencia $notificadorDeTransferencia,
     ) {}
 
     public function transferir(float $valor, int $pagadorId, int $recebedorId)
@@ -25,8 +26,8 @@ class TransferenciaService
             throw new SameUserTransferException;
         }
 
-        $pagador = $this->usuarioRepo->buscarPorId($pagadorId);
-        $recebedor = $this->usuarioRepo->buscarPorId($recebedorId);
+        $pagador = $this->usuarioRepository->buscarPorId($pagadorId);
+        $recebedor = $this->usuarioRepository->buscarPorId($recebedorId);
 
         if (! $pagador) {
             throw new UserNotFoundException('Pagador não encontrado');
@@ -44,8 +45,8 @@ class TransferenciaService
 
         try {
             return DB::transaction(function () use ($valor, $pagador, $recebedor) {
-                $carteiraPagador = $this->carteiraRepo->obterPorUsuarioComLock($pagador->id);
-                $carteiraRecebedor = $this->carteiraRepo->obterPorUsuarioComLock($recebedor->id);
+                $carteiraPagador = $this->carteiraRepository->obterPorUsuarioComLock($pagador->id);
+                $carteiraRecebedor = $this->carteiraRepository->obterPorUsuarioComLock($recebedor->id);
 
                 if ($carteiraPagador->saldo < $valor) {
                     throw new InsufficientBalanceException;
@@ -58,6 +59,7 @@ class TransferenciaService
                 $transferencia = $this->transferenciaRepository->criar([
                     'pagador_id' => $pagador->id,
                     'recebedor_id' => $recebedor->id,
+                    'email_recebedor' => $recebedor->email,
                     'valor' => $valor,
                     'status' => 'pendente',
                 ]);
@@ -65,25 +67,18 @@ class TransferenciaService
                 $carteiraPagador->saldo -= $valor;
                 $carteiraRecebedor->saldo += $valor;
 
-                $this->carteiraRepo->salvar($carteiraPagador);
-                $this->carteiraRepo->salvar($carteiraRecebedor);
+                $this->carteiraRepository->salvar($carteiraPagador);
+                $this->carteiraRepository->salvar($carteiraRecebedor);
 
                 $this->transferenciaRepository->marcarSucesso($transferencia);
 
                 return $transferencia;
             });
-        } catch (TransferNotAuthorizedException $e) {
-            $transferencia->marcarFalha($e->getMessage());
-            throw $e;
-        } catch (InsufficientBalanceException $e) {
-            $transferencia->marcarFalha($e->getMessage());
-            throw $e;
         } catch (\Exception $e) {
             if ($transferencia) {
                 $transferencia->marcarFalha($e->getMessage());
             }
             Log::error('Transferência falhou', [
-                // 'transferencia_id' => $transferencia->id,
                 'erro' => $e->getMessage(),
             ]);
 
@@ -96,12 +91,16 @@ class TransferenciaService
         $transferencia = $this->transferir($valor, $pagadorId, $recebedorId);
 
         try {
-            $recebedor = $this->usuarioRepo->buscarPorId($recebedorId);
-            $this->notificador->enviar($recebedor->email, "Você recebeu R$ {$valor}");
+            $this->notificadorDeTransferencia->notificar(
+                $transferencia->id,
+                $valor,
+                $transferencia->email_recebedor
+            );
         } catch (\Throwable $e) {
             Log::error('Falha ao notificar recebimento: '.$e->getMessage(), [
                 'transferencia_id' => $transferencia->id,
             ]);
+
             $transferencia->meta = json_encode(['notificacao' => 'falha']);
             $transferencia->save();
         }

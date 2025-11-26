@@ -13,6 +13,7 @@ class Transferencia extends Model
     protected $fillable = [
         'pagador_id',
         'recebedor_id',
+        'email_recebedor',
         'valor',
         'status',
         'meta',
