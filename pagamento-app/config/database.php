@@ -113,6 +113,29 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'host' => env('MONGO_HOST', 'mongo'),
+            'port' => env('MONGO_PORT', 27017),
+            'database' => env('MONGO_DATABASE', 'pagamento'),
+            'username' => env('MONGO_USERNAME', null),
+            'password' => env('MONGO_PASSWORD', null),
+            'options' => [
+                'database' => env('MONGO_AUTHDB', 'admin'),
+            ],
+        ],
+        'mongodb_testing' => [
+            'driver' => 'mongodb',
+            'host' => env('MONGO_TEST_HOST', 'mongo'),
+            'port' => env('MONGO_TEST_PORT', 27017),
+            'database' => env('MONGO_TEST_DB', 'pagamento_test'),
+            'username' => env('MONGO_TEST_USER', 'root'),
+            'password' => env('MONGO_TEST_PASS', 'root'),
+            'options' => [
+                'authSource' => 'admin',
+            ],
+        ],
+
     ],
 
     /*

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Carteira;
+use App\Models\Transferencia;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -31,7 +32,7 @@ class TransferenciaTest extends TestCase
             'payee' => $recebedor->id,
         ]);
 
-        $response->assertStatus(201)->assertJson(['sucesso' => true]);
+        $response->assertStatus(200)->assertJson(['sucesso' => true]);
 
         $this->assertDatabaseHas('carteiras', [
             'usuario_id' => $pagador->id,
@@ -42,5 +43,13 @@ class TransferenciaTest extends TestCase
             'usuario_id' => $recebedor->id,
             'saldo' => 100.00,
         ]);
+
+        $transferencia = Transferencia::where('pagador_id', $pagador->id)
+            ->where('recebedor_id', $recebedor->id)
+            ->first();
+
+        $this->assertNotNull($transferencia);
+        $this->assertEquals(100, $transferencia->valor);
+        $this->assertEquals('sucesso', $transferencia->status);
     }
 }
