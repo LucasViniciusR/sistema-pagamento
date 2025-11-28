@@ -2,8 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\TransferenciaService;
+use App\DTOs\TransferenciaDTO;
 use App\Http\Requests\TransferenciaRequest;
+use App\Services\TransferenciaService;
+use App\Exceptions\SaldoInsuficienteException;
+use App\Exceptions\TransferenciaMesmoUsuarioException;
+use App\Exceptions\TransferenciaNaoAutorizadaException;
+use App\Exceptions\TransferenciaNaoPermitidaException;
+use App\Exceptions\UsuarioNaoEncontradoException;
 
 class TransferenciaController extends Controller
 {
@@ -14,11 +20,13 @@ class TransferenciaController extends Controller
         try {
             $dados = $request->validated();
 
-            $transferencia = $this->service->transferirENotificar(
-                (float) $dados['value'],
-                (int) $dados['payer'],
-                (int) $dados['payee']
+            $transferenciaDto = new TransferenciaDTO(
+                valor: (float) $dados['value'],
+                pagadorId: (int) $dados['payer'],
+                recebedorId: (int) $dados['payee'],
             );
+
+            $transferencia = $this->service->transferirENotificar($transferenciaDto);
 
             return response()->json([
                 'sucesso' => true,
@@ -51,6 +59,7 @@ class TransferenciaController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Erro ao processar transferência: '.$e->getMessage());
+
             return response()->json([
                 'message' => 'Erro ao processar transferência',
                 'error' => config('app.debug') ? $e->getMessage() : null,

@@ -2,9 +2,8 @@
 
 namespace App\Kafka;
 
+use App\Contracts\ServicoDeNotificacaoInterface;
 use App\Contracts\TransferenciaRepositoryInterface;
-use App\Services\Notificacao\ServicoDeNotificacao;
-use Illuminate\Support\Facades\Log;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 
@@ -12,11 +11,11 @@ class KafkaTransferenciaConsumer
 {
     private KafkaConsumer $consumer;
 
-    private ServicoDeNotificacao $notificador;
+    private ServicoDeNotificacaoInterface $notificador;
 
     private TransferenciaRepositoryInterface $transferenciaRepository;
 
-    public function __construct(ServicoDeNotificacao $notificador, TransferenciaRepositoryInterface $transferenciaRepository, bool $criarConsumerReal = true)
+    public function __construct(ServicoDeNotificacaoInterface $notificador, TransferenciaRepositoryInterface $transferenciaRepository, bool $criarConsumerReal = true)
     {
         $this->notificador = $notificador;
         $this->transferenciaRepository = $transferenciaRepository;
@@ -54,7 +53,7 @@ class KafkaTransferenciaConsumer
                     break;
 
                 default:
-                    Log::error('Kafka error: '.$mensagem->errstr());
+                    \Log::error('Kafka error: '.$mensagem->errstr());
                     break;
             }
         }
@@ -73,10 +72,15 @@ class KafkaTransferenciaConsumer
 
                 $this->notificador->enviar($email, $mensagem);
 
-                $this->transferenciaRepository->marcarSucesso($dados['transferencia']);
+                $this->transferenciaRepository->atualizarMeta($dados['transferencia_id'], [
+                    'notificacao_enviada' => true,
+                ]);
             }
-        } catch (\Throwable $e) {
-            $this->transferenciaRepository->marcarFalha($dados['transferencia']);
+        } catch (\Exception $e) {
+            $this->transferenciaRepository->atualizarMeta($dados['transferencia_id'], [
+                'notificacao_enviada' => false,
+                'erro_notificacao' => $e->getMessage(),
+            ]);
 
             throw $e;
         }

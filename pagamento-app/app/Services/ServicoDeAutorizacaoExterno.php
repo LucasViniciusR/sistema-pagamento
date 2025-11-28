@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Contracts\AutorizadorDeTransferenciaInterface;
+use App\Contracts\ServicoDeAutorizacaoInterface;
 use Illuminate\Support\Facades\Http;
 
-class ServicoAutorizacaoExterno implements AutorizadorDeTransferenciaInterface
+class ServicoDeAutorizacaoExterno implements ServicoDeAutorizacaoInterface
 {
     public function autorizar(): bool
     {

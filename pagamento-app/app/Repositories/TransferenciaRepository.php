@@ -23,4 +23,13 @@ class TransferenciaRepository implements TransferenciaRepositoryInterface
         $transferencia->status = 'falha';
         $transferencia->save();
     }
+
+    public function atualizarMeta(string $transferenciaId, array $meta): void
+    {
+        $transferencia = Transferencia::find($transferenciaId);
+        if ($transferencia) {
+            $transferencia->meta = json_encode($meta);
+            $transferencia->save();
+        }
+    }
 }

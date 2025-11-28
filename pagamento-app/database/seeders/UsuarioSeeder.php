@@ -10,7 +10,6 @@ class UsuarioSeeder extends Seeder
 {
     public function run(): void
     {
-        // Usuário pagador
         $pagador = Usuario::create([
             'nome_completo' => 'João Pagador',
             'cpf' => '11111111111',
@@ -23,7 +22,6 @@ class UsuarioSeeder extends Seeder
             'saldo' => 1000.00,
         ]);
 
-        // Usuário recebedor
         $recebedor = Usuario::create([
             'nome_completo' => 'Maria Recebedora',
             'cpf' => '22222222222',

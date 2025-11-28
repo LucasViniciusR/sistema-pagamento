@@ -62,7 +62,7 @@ Este é um sistema de transferências financeiras desenvolvido em **Laravel** qu
 
 #### 1. Clone o repositório
 ```bash
-git clone <https://github.com/LucasViniciusR/sistema-pagamento.git>
+git clone https://github.com/LucasViniciusR/sistema-pagamento.git
 cd pagamento-app
 ```
 
@@ -76,27 +76,22 @@ cp .env.example .env
 docker-compose up -d
 ```
 
-#### 4. Instale as dependências
-```bash
-docker exec -it pagamento-app composer install
-```
-
-#### 5. Gere a chave da aplicação
+#### 4. Gere a chave da aplicação
 ```bash
 docker exec -it pagamento-app php artisan key:generate
 ```
 
-#### 6. Execute as migrations
+#### 5. Execute as migrations
 ```bash
 docker exec -it pagamento-app php artisan migrate
 ```
 
-#### 7. (Opcional) Popule o banco com dados de teste
+#### 6. (Opcional) Popule o banco com dados de teste
 ```bash
 docker exec -it pagamento-app php artisan db:seed
 ```
 
-### Opcional: Consumir Mensagens do Kafka:
+### 7. (Opcional) Consumir Mensagens do Kafka:
 
 ```bash
 docker exec -it pagamento-app php artisan kafka:consumir-transferencias
@@ -184,12 +179,12 @@ docker exec -it pagamento-app php artisan test --coverage
 
 ### Principais Cenários Testados:
 
-- Transferência bem-sucedida  
-- Saldo insuficiente  
-- Lojista tentando transferir  
-- Valor inválido  
-- Usuário não encontrado  
-- Transferência para mesmo usuário  
+- Transferência bem-sucedida
+- Saldo insuficiente
+- Lojista tentando transferir
+- Valor inválido
+- Usuário não encontrado
+- Transferência para mesmo usuário
 - Processamento de mensagens Kafka
 
 ---

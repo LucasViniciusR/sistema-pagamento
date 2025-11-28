@@ -28,8 +28,8 @@ class TransferenciaRequest extends FormRequest
             'value.min' => 'O valor da transferência deve ser pelo menos 0.01',
             'payer.required' => 'O pagador é obrigatório',
             'payer.exists' => 'Pagador não encontrado',
-            'payee.required' => 'O beneficiário é obrigatório',
-            'payee.exists' => 'Beneficiário não encontrado',
+            'payee.required' => 'O recebedor é obrigatório',
+            'payee.exists' => 'Recebedor não encontrado',
         ];
     }
 }

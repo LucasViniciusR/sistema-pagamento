@@ -2,7 +2,7 @@
 
 namespace App\Contracts;
 
-interface AutorizadorDeTransferenciaInterface
+interface ServicoDeAutorizacaoInterface
 {
     public function autorizar(): bool;
 }

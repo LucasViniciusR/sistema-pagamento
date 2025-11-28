@@ -13,7 +13,8 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(\App\Contracts\NotificadorDeTransferenciaInterface::class, \App\Services\Notificacao\NotificadorKafka::class);
         $this->app->bind(\App\Contracts\TransferenciaRepositoryInterface::class, \App\Repositories\TransferenciaRepository::class);
-        $this->app->bind(\App\Contracts\AutorizadorDeTransferenciaInterface::class, \App\Services\ServicoAutorizacaoExterno::class);
+        $this->app->bind(\App\Contracts\ServicoDeAutorizacaoInterface::class, \App\Services\ServicoDeAutorizacaoExterno::class);
+        $this->app->bind(\App\Contracts\ServicoDeNotificacaoInterface::class, \App\Services\Notificacao\ServicoDeNotificacaoEmail::class);
     }
 
     /**

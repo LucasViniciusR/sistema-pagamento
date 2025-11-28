@@ -11,4 +11,6 @@ interface TransferenciaRepositoryInterface
     public function marcarSucesso(Transferencia $transferencia): void;
 
     public function marcarFalha(Transferencia $transferencia): void;
+
+    public function atualizarMeta(string $transferenciaId, array $meta): void;
 }

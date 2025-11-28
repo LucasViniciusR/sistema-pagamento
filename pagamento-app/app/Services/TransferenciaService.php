@@ -2,15 +2,19 @@
 
 namespace App\Services;
 
-use App\Contracts\AutorizadorDeTransferenciaInterface;
 use App\Contracts\NotificadorDeTransferenciaInterface;
+use App\Contracts\ServicoDeAutorizacaoInterface;
 use App\Contracts\TransferenciaRepositoryInterface;
 use App\DTOs\TransferenciaDTO;
+use App\Exceptions\SaldoInsuficienteException;
+use App\Exceptions\TransferenciaMesmoUsuarioException;
+use App\Exceptions\TransferenciaNaoAutorizadaException;
+use App\Exceptions\TransferenciaNaoPermitidaException;
+use App\Exceptions\UsuarioNaoEncontradoException;
+use App\Exceptions\ValorInvalidoException;
 use App\Repositories\CarteiraRepository;
 use App\Repositories\UsuarioRepository;
-use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class TransferenciaService
 {
@@ -18,27 +22,22 @@ class TransferenciaService
         private UsuarioRepository $usuarioRepository,
         private CarteiraRepository $carteiraRepository,
         private TransferenciaRepositoryInterface $transferenciaRepository,
-        private AutorizadorDeTransferenciaInterface $autorizador,
+        private ServicoDeAutorizacaoInterface $autorizador,
         private NotificadorDeTransferenciaInterface $notificadorDeTransferencia,
     ) {}
 
-    public function transferir(float $valor, int $pagadorId, int $recebedorId)
+    public function transferir(TransferenciaDTO $transferenciaDTO)
     {
-        $dto = new TransferenciaDTO(
-            valor: $valor,
-            pagadorId: $pagadorId,
-            recebedorId: $recebedorId,
-        );
-        if ($dto->valor < 0.01) {
-            throw new ValorInvalidoException();
+        if ($transferenciaDTO->valor < 0.01) {
+            throw new ValorInvalidoException;
         }
 
-        if ($dto->pagadorId === $dto->recebedorId) {
-            throw new TransferenciaMesmoUsuarioException();
+        if ($transferenciaDTO->pagadorId === $transferenciaDTO->recebedorId) {
+            throw new TransferenciaMesmoUsuarioException;
         }
 
-        $pagador = $this->usuarioRepository->buscarPorId($dto->pagadorId);
-        $recebedor = $this->usuarioRepository->buscarPorId($dto->recebedorId);
+        $pagador = $this->usuarioRepository->buscarPorId($transferenciaDTO->pagadorId);
+        $recebedor = $this->usuarioRepository->buscarPorId($transferenciaDTO->recebedorId);
 
         if (! $pagador) {
             throw new UsuarioNaoEncontradoException('Pagador não encontrado');
@@ -49,21 +48,21 @@ class TransferenciaService
         }
 
         if ($pagador->tipo === 'lojista') {
-            throw new TransferenciaNaoPermitidaException();
+            throw new TransferenciaNaoPermitidaException;
         }
 
-        return $this->executarTransferencia($dto, $pagador, $recebedor);
+        return $this->executarTransferencia($transferenciaDTO, $pagador, $recebedor);
     }
 
-    private function executarTransferencia(TransferenciaDTO $dto, $pagador, $recebedor)
+    private function executarTransferencia(TransferenciaDTO $transferenciaDTO, $pagador, $recebedor)
     {
         $transferencia = null;
         try {
-            return DB::transaction(function () use ($dto, $pagador, $recebedor) {
+            return DB::transaction(function () use ($transferenciaDTO, $pagador, $recebedor, &$transferencia) {
                 $carteiraPagador = $this->carteiraRepository->obterPorUsuarioComLock($pagador->id);
                 $carteiraRecebedor = $this->carteiraRepository->obterPorUsuarioComLock($recebedor->id);
 
-                if ($carteiraPagador->saldo < $dto->valor) {
+                if ($carteiraPagador->saldo < $transferenciaDTO->valor) {
                     throw new SaldoInsuficienteException;
                 }
 
@@ -75,12 +74,12 @@ class TransferenciaService
                     'pagador_id' => $pagador->id,
                     'recebedor_id' => $recebedor->id,
                     'email_recebedor' => $recebedor->email,
-                    'valor' => $dto->valor,
+                    'valor' => $transferenciaDTO->valor,
                     'status' => 'pendente',
                 ]);
 
-                $carteiraPagador->saldo -= $dto->valor;
-                $carteiraRecebedor->saldo += $dto->valor;
+                $carteiraPagador->saldo -= $transferenciaDTO->valor;
+                $carteiraRecebedor->saldo += $transferenciaDTO->valor;
 
                 $this->carteiraRepository->salvar($carteiraPagador);
                 $this->carteiraRepository->salvar($carteiraRecebedor);
@@ -89,11 +88,11 @@ class TransferenciaService
 
                 return $transferencia;
             });
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             if ($transferencia) {
                 $this->transferenciaRepository->marcarFalha($transferencia);
             }
-            Log::error('Transferência falhou', [
+            \Log::error('Transferência falhou', [
                 'erro' => $e->getMessage(),
             ]);
 
@@ -101,18 +100,18 @@ class TransferenciaService
         }
     }
 
-    public function transferirENotificar(float $valor, int $pagadorId, int $recebedorId)
+    public function transferirENotificar(TransferenciaDTO $transferenciaDTO)
     {
-        $transferencia = $this->transferir($valor, $pagadorId, $recebedorId);
+        $transferencia = $this->transferir($transferenciaDTO);
 
         try {
             $this->notificadorDeTransferencia->notificar(
                 $transferencia->_id,
-                $valor,
+                $transferenciaDTO->valor,
                 $transferencia->email_recebedor
             );
-        } catch (Exception $e) {
-            Log::error('Falha ao notificar recebimento: '.$e->getMessage(), [
+        } catch (\Exception $e) {
+            \Log::error('Falha ao notificar recebimento: '.$e->getMessage(), [
                 'transferencia_id' => $transferencia->_id,
             ]);
             $this->transferenciaRepository->marcarFalha($transferencia);
