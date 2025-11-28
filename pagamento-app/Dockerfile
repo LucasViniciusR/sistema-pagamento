@@ -14,12 +14,14 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && docker-php-ext-install pdo pdo_mysql mbstring gd
 
-RUN pecl install mongodb \
-    && echo "extension=mongodb.so" > /usr/local/etc/php/conf.d/mongodb.ini
-RUN pecl install rdkafka \
-    && docker-php-ext-enable rdkafka
+RUN pecl install mongodb rdkafka xdebug \
+    && echo "extension=mongodb.so" > /usr/local/etc/php/conf.d/mongodb.ini \
+    && docker-php-ext-enable rdkafka \
+    && docker-php-ext-enable xdebug
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+COPY xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
 WORKDIR /var/www/html
 

@@ -2,7 +2,7 @@
 
 namespace App\Kafka;
 
-use App\Models\Transferencia;
+use App\Contracts\TransferenciaRepositoryInterface;
 use App\Services\Notificacao\ServicoDeNotificacao;
 use Illuminate\Support\Facades\Log;
 use RdKafka\Conf;
@@ -14,17 +14,22 @@ class KafkaTransferenciaConsumer
 
     private ServicoDeNotificacao $notificador;
 
-    public function __construct(ServicoDeNotificacao $notificador)
+    private TransferenciaRepositoryInterface $transferenciaRepository;
+
+    public function __construct(ServicoDeNotificacao $notificador, TransferenciaRepositoryInterface $transferenciaRepository, bool $criarConsumerReal = true)
     {
         $this->notificador = $notificador;
+        $this->transferenciaRepository = $transferenciaRepository;
 
         $conf = new Conf;
         $conf->set('metadata.broker.list', env('KAFKA_BROKERS', 'kafka:9092'));
         $conf->set('group.id', 'transferencias-consumer-v2');
         $conf->set('auto.offset.reset', 'earliest');
 
-        $this->consumer = new KafkaConsumer($conf);
-        $this->consumer->subscribe(['transferencias']);
+        if ($criarConsumerReal) {
+            $this->consumer = new KafkaConsumer($conf);
+            $this->consumer->subscribe(['transferencias']);
+        }
     }
 
     public function processar()
@@ -55,7 +60,7 @@ class KafkaTransferenciaConsumer
         }
     }
 
-    private function processarTransferencia(array $dados): void
+    public function processarTransferencia(array $dados): void
     {
         try {
             $email = $dados['email'] ?? null;
@@ -68,16 +73,10 @@ class KafkaTransferenciaConsumer
 
                 $this->notificador->enviar($email, $mensagem);
 
-                Transferencia::where('_id', $dados['transferencia_id'])
-                    ->update([
-                        'meta' => ['notificacao' => 'sucesso'],
-                    ]);
+                $this->transferenciaRepository->marcarSucesso($dados['transferencia']);
             }
         } catch (\Throwable $e) {
-            Transferencia::where('_id', $dados['transferencia_id'])
-                ->update([
-                    'meta' => ['notificacao' => 'falha'],
-                ]);
+            $this->transferenciaRepository->marcarFalha($dados['transferencia']);
 
             throw $e;
         }

@@ -3,29 +3,58 @@
 namespace App\Http\Controllers;
 
 use App\Services\TransferenciaService;
-use Illuminate\Http\Request;
+use App\Http\Requests\TransferenciaRequest;
 
 class TransferenciaController extends Controller
 {
     public function __construct(private TransferenciaService $service) {}
 
-    public function transferir(Request $request)
+    public function transferir(TransferenciaRequest $request)
     {
-        $dados = $request->validate([
-            'value' => 'required|numeric|min:0.01',
-            'payer' => 'required|integer|exists:usuarios,id',
-            'payee' => 'required|integer|exists:usuarios,id|different:payer',
-        ]);
+        try {
+            $dados = $request->validated();
 
-        $transferencia = $this->service->transferirENotificar(
-            (float) $dados['value'],
-            (int) $dados['payer'],
-            (int) $dados['payee']
-        );
+            $transferencia = $this->service->transferirENotificar(
+                (float) $dados['value'],
+                (int) $dados['payer'],
+                (int) $dados['payee']
+            );
 
-        return response()->json([
-            'sucesso' => true,
-            'transferencia_id' => $transferencia->id,
-        ], 200);
+            return response()->json([
+                'sucesso' => true,
+                'transferencia_id' => $transferencia->_id,
+            ], 200);
+        } catch (TransferenciaNaoPermitidaException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 403);
+
+        } catch (SaldoInsuficienteException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+
+        } catch (TransferenciaNaoAutorizadaException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 403);
+
+        } catch (UsuarioNaoEncontradoException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 404);
+
+        } catch (TransferenciaMesmoUsuarioException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+
+        } catch (\Exception $e) {
+            \Log::error('Erro ao processar transferência: '.$e->getMessage());
+            return response()->json([
+                'message' => 'Erro ao processar transferência',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
     }
 }

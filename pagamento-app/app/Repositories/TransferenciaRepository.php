@@ -2,9 +2,10 @@
 
 namespace App\Repositories;
 
+use App\Contracts\TransferenciaRepositoryInterface;
 use App\Models\Transferencia;
 
-class TransferenciaRepository
+class TransferenciaRepository implements TransferenciaRepositoryInterface
 {
     public function criar(array $dados): Transferencia
     {

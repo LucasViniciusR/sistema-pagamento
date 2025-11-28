@@ -2,10 +2,10 @@
 
 namespace App\Services\Notificacao;
 
-use App\Contracts\NotificadorDeTransferencia;
+use App\Contracts\NotificadorDeTransferenciaInterface;
 use App\Kafka\KafkaProducer;
 
-class NotificadorKafka implements NotificadorDeTransferencia
+class NotificadorKafka implements NotificadorDeTransferenciaInterface
 {
     public function __construct(private KafkaProducer $producer) {}
 

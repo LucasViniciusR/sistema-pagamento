@@ -8,6 +8,6 @@ class UsuarioRepository
 {
     public function buscarPorId(int $id): Usuario
     {
-        return Usuario::with('carteira')->findOrFail($id);
+        return Usuario::findOrFail($id);
     }
 }
