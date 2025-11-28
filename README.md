@@ -131,26 +131,20 @@ Realiza uma transferência entre usuários.
 }
 ```
 
-#### Response - Sucesso (200):
+#### Response - Sucesso (201):
 ```json
 {
   "mensagem": "Transferência realizada com sucesso",
   "transferencia": {
-    "_id": "507f1f77bcf86cd799439011",
-    "pagador_id": 1,
-    "recebedor_id": 2,
-    "valor": 100.50,
-    "status": "sucesso",
-    "created_at": "2025-11-27T10:30:00Z"
+      "pagador_id": 1,
+      "recebedor_id": 2,
+      "email_recebedor": "recebedor@example.com",
+      "valor": 100.50,
+      "status": "sucesso",
+      "updated_at": "2025-11-28T16:34:02.973000Z",
+      "created_at": "2025-11-28T16:34:02.928000Z",
+      "id": "6929cefac88b6305240898af"
   }
-}
-```
-
-#### Response - Erro (400):
-```json
-{
-  "mensagem": "Saldo insuficiente",
-  "erro": "SaldoInsuficienteException"
 }
 ```
 
@@ -204,3 +198,4 @@ docker exec -it pagamento-app php artisan test --coverage
 3. Implementar retry de notificações
 4. Melhorar cobertura de testes
 5. Documentar API (Swagger/OpenAPI)
+6. Remover o uso de float para lidar com dinheiro

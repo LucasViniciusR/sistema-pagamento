@@ -1,0 +1,44 @@
+{
+	"info": {
+		"_postman_id": "8a3c6b0b-14c8-4f3c-8bc2-a6b8b3b8a33a",
+		"name": "Pagamento API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7708103"
+	},
+	"item": [
+		{
+			"name": "Transferir",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"value\": 5,\n  \"payer\": 1,\n  \"payee\": 2\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/transfer",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"transfer"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

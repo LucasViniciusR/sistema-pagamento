@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DTOs\TransferenciaDTO;
+use App\Exceptions\ValorInvalidoException;
 use App\Http\Requests\TransferenciaRequest;
 use App\Services\TransferenciaService;
 use App\Exceptions\SaldoInsuficienteException;
@@ -29,9 +30,9 @@ class TransferenciaController extends Controller
             $transferencia = $this->service->transferirENotificar($transferenciaDto);
 
             return response()->json([
-                'sucesso' => true,
-                'transferencia_id' => $transferencia->_id,
-            ], 200);
+                "mensagem" => "Transferência realizada com sucesso",
+                'transferencia' => $transferencia,
+            ], 201);
         } catch (TransferenciaNaoPermitidaException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -57,6 +58,10 @@ class TransferenciaController extends Controller
                 'message' => $e->getMessage(),
             ], 422);
 
+        } catch (ValorInvalidoException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
         } catch (\Exception $e) {
             \Log::error('Erro ao processar transferência: '.$e->getMessage());
 

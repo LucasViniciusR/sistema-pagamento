@@ -26,13 +26,13 @@ class TransferenciaTest extends TestCase
         Carteira::factory()->create(['usuario_id' => $pagador->id, 'saldo' => 200]);
         Carteira::factory()->create(['usuario_id' => $recebedor->id, 'saldo' => 0]);
 
-        $response = $this->postJson('/api/transferencias', [
+        $response = $this->postJson('/api/transfer', [
             'value' => 100,
             'payer' => $pagador->id,
             'payee' => $recebedor->id,
         ]);
 
-        $response->assertStatus(200)->assertJson(['sucesso' => true]);
+        $response->assertStatus(201)->assertJson(["mensagem" => "Transferência realizada com sucesso",]);
 
         $this->assertDatabaseHas('carteiras', [
             'usuario_id' => $pagador->id,

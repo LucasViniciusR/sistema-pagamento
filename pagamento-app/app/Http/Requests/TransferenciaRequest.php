@@ -14,7 +14,7 @@ class TransferenciaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'value' => ['required', 'numeric', 'min:0.01'],
+            'value' => ['required', 'decimal:0,2', 'min:0.01'],
             'payer' => ['required', 'integer', 'exists:usuarios,id'],
             'payee' => ['required', 'integer', 'exists:usuarios,id'],
         ];
@@ -24,7 +24,7 @@ class TransferenciaRequest extends FormRequest
     {
         return [
             'value.required' => 'O valor da transferência é obrigatório',
-            'value.numeric' => 'O valor deve ser numérico',
+            'value.decimal' => 'O valor deve ser um número decimal com até 2 casas decimais',
             'value.min' => 'O valor da transferência deve ser pelo menos 0.01',
             'payer.required' => 'O pagador é obrigatório',
             'payer.exists' => 'Pagador não encontrado',

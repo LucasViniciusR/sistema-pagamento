@@ -59,7 +59,7 @@ class TransferenciaServiceTest extends TestCase
     public function test_lancar_excecao_quando_valor_menor_que_minimo()
     {
         $this->expectException(ValorInvalidoException::class);
-        $this->expectExceptionMessage('O valor da transferência deve ser pelo menos 0.01');
+        $this->expectExceptionMessage('Valor de transferência invalido. O valor deve ter no máximo 2 casas decimais e ser maior que 0.01');
         $this->expectExceptionCode(422);
 
         $this->service->transferir(new TransferenciaDTO(

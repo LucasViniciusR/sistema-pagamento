@@ -28,6 +28,10 @@ class TransferenciaService
 
     public function transferir(TransferenciaDTO $transferenciaDTO)
     {
+        if (floor($transferenciaDTO->valor * 100) != $transferenciaDTO->valor * 100) {
+            throw new ValorInvalidoException;
+        }
+
         if ($transferenciaDTO->valor < 0.01) {
             throw new ValorInvalidoException;
         }

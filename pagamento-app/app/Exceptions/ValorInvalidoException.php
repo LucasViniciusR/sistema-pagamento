@@ -8,6 +8,6 @@ class ValorInvalidoException extends Exception
 {
     public function __construct()
     {
-        parent::__construct('O valor da transferência deve ser pelo menos 0.01', 422);
+        parent::__construct('Valor de transferência invalido. O valor deve ter no máximo 2 casas decimais e ser maior que 0.01', 422);
     }
 }
