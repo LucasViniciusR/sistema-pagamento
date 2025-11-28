@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\DTOs\TransferenciaDTO;
-use App\Exceptions\ValorInvalidoException;
-use App\Http\Requests\TransferenciaRequest;
-use App\Services\TransferenciaService;
 use App\Exceptions\SaldoInsuficienteException;
 use App\Exceptions\TransferenciaMesmoUsuarioException;
 use App\Exceptions\TransferenciaNaoAutorizadaException;
 use App\Exceptions\TransferenciaNaoPermitidaException;
 use App\Exceptions\UsuarioNaoEncontradoException;
+use App\Exceptions\ValorInvalidoException;
+use App\Http\Requests\TransferenciaRequest;
+use App\Services\TransferenciaService;
 
 class TransferenciaController extends Controller
 {
@@ -30,7 +30,7 @@ class TransferenciaController extends Controller
             $transferencia = $this->service->transferirENotificar($transferenciaDto);
 
             return response()->json([
-                "mensagem" => "Transferência realizada com sucesso",
+                'mensagem' => 'Transferência realizada com sucesso',
                 'transferencia' => $transferencia,
             ], 201);
         } catch (TransferenciaNaoPermitidaException $e) {

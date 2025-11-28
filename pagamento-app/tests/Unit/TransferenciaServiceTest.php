@@ -12,9 +12,9 @@ use App\Exceptions\TransferenciaNaoAutorizadaException;
 use App\Exceptions\TransferenciaNaoPermitidaException;
 use App\Exceptions\UsuarioNaoEncontradoException;
 use App\Exceptions\ValorInvalidoException;
-use App\Models\Usuario;
 use App\Models\Carteira;
 use App\Models\Transferencia;
+use App\Models\Usuario;
 use App\Repositories\CarteiraRepository;
 use App\Repositories\UsuarioRepository;
 use App\Services\TransferenciaService;
@@ -25,10 +25,15 @@ use Tests\TestCase;
 class TransferenciaServiceTest extends TestCase
 {
     private $usuarioRepository;
+
     private $carteiraRepository;
+
     private $transferenciaRepository;
+
     private $autorizador;
+
     private $notificador;
+
     private $service;
 
     protected function setUp(): void

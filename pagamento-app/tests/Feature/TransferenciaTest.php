@@ -32,7 +32,7 @@ class TransferenciaTest extends TestCase
             'payee' => $recebedor->id,
         ]);
 
-        $response->assertStatus(201)->assertJson(["mensagem" => "Transferência realizada com sucesso",]);
+        $response->assertStatus(201)->assertJson(['mensagem' => 'Transferência realizada com sucesso']);
 
         $this->assertDatabaseHas('carteiras', [
             'usuario_id' => $pagador->id,
